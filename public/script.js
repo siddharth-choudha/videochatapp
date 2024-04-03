@@ -21,17 +21,27 @@ navigator.mediaDevices
     .then((stream) => {
         myStream = stream;
         addVideoStream(myVideo, stream);
-        socket.on("user-connected",(userId)=>{
-            connectToNewUser(userId, stream)
-        })
-        peer.on("call", (call)=>{
-            call.answer(stream)
-            const video = document.createElement("video")
-            call.on("stream", (userVideoStream)=>{
-                addVideoStream(video,userVideoStream)
-            })
-        })
+
+        socket.on("user-connected", (userId) => {
+            connectToNewUser(userId, stream);
+        });
+
+        peer.on("call", (call) => {
+            call.answer(stream);
+            const video = document.createElement("video");
+            call.on("stream", (userVideoStream) => {
+                addVideoStream(video, userVideoStream);
+            });
+        });
     })
+
+function connectToNewUser(userId, stream) {
+    const call = peer.call(userId, stream);
+    const video = document.createElement("video");
+    call.on("stream", (userVideoStream) => {
+        addVideoStream(video, userVideoStream);
+    });
+};
 
 function addVideoStream(video, stream) {
     video.srcObject = stream;
@@ -40,14 +50,6 @@ function addVideoStream(video, stream) {
         $("#video_grid").append(video)
     });
 };
-
-function connectToNewUser(userId, stream){
-    const call = peer.call(userId, stream)
-    const video = document.createElement("video")
-    call.on("stream",(userVideoStream)=>{
-        addVideoStream(video,userVideoStream)
-    })
-}
 
 $(function () {
     $("#show_chat").click(function () {
@@ -74,55 +76,56 @@ $(function () {
             $("#chat_message").val("");
         }
     })
-    $('#mute_button').click(function(){
-        const enabled = myStream.getAudioTracks()[0].enabled
-        if (enabled){
-            myStream.getAudioTracks()[0].enabled = false
-            html = `<i class = "fas fa-microphone-slash"></i>`
-            $('#mute_button').toggleClass("background_red")
-            $('#mute_button').html(html)
-        }
-        else{
-            myStream.getAudioTracks()[0].enabled = true
-            html = `<i class = "fas fa-microphone"></i>`
-            $('#mute_button').toggleClass("background_red")
-            $('mute_button').html(html)
+
+    $("#mute_button").click(function () {
+        const enabled = myStream.getAudioTracks()[0].enabled;
+        if (enabled) {
+            myStream.getAudioTracks()[0].enabled = false;
+            html = `<i class="fas fa-microphone-slash"></i>`;
+            $("#mute_button").toggleClass("background_red");
+            $("#mute_button").html(html)
+        } else {
+            myStream.getAudioTracks()[0].enabled = true;
+            html = `<i class="fas fa-microphone"></i>`;
+            $("#mute_button").toggleClass("background_red");
+            $("#mute_button").html(html)
         }
     })
-    $('#stop_video').click(function(){
-        const enabled = myStream.getAudioTracks()[0].enabled
-        if (enabled){
-            myStream.getAudioTracks()[0].enabled = false
-            html = `<i class = "fas fa-video-slash"></i>`
-            $('#stop_video').toggleClass("background_red")
-            $('#stop_video').html(html)
-        }
-        else{
-            myStream.getAudioTracks()[0].enabled = true
-            html = `<i class = "fas fa-microphone"></i>`
-            $('#stop_video').toggleClass("background_red")
-            $('#stop_video').html(html)
-        }
 
+    $("#stop_video").click(function () {
+        const enabled = myStream.getVideoTracks()[0].enabled;
+        if (enabled) {
+            myStream.getVideoTracks()[0].enabled = false;
+            html = `<i class="fas fa-video-slash"></i>`;
+            $("#stop_video").toggleClass("background_red");
+            $("#stop_video").html(html)
+        } else {
+            myStream.getVideoTracks()[0].enabled = true;
+            html = `<i class="fas fa-video"></i>`;
+            $("#stop_video").toggleClass("background_red");
+            $("#stop_video").html(html)
+        }
     })
-    $('#show_chat').click(function(){
-        const enabled = myStream.getAudioTracks()[0].enabled
-        if (enabled){
-            myStream.getAudioTracks()[0].enabled = false
-            html = `<i class = "fas fa-video-slash"></i>`
-            $('#show_chat').toggleClass("background_red")
-            $('#show_chat').html(html)
+    $("invite_button").click(function(){
+        const to = prompt("Enter The Email Address")
+        var data = {
+            url : window.location.href,
+            to : to,
         }
-        else{
-            myStream.getAudioTracks()[0].enabled = true
-            html = `<i class = "fas fa-microphone"></i>`
-            $('#show_chat').toggleClass("background_red")
-            $('#show_chat').html(html)
-        }
-
+        $.ajax({
+            url : "/send-mail",
+            type : "post",
+            data : JSON.stringify(data),
+            dataType : "json",
+            contentType : "application/json",
+            success : function(result){
+                alert("invite sent")
+            },
+            error : function(result){
+                console.log(result.responseJSON)
+            }
+        })
     })
-    
-
 
 })
 
