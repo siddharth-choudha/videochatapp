@@ -106,7 +106,7 @@ $(function () {
             $("#stop_video").html(html)
         }
     })
-    $("invite_button").click(function(){
+    $("#invite_button").click(function(){
         const to = prompt("Enter The Email Address")
         var data = {
             url : window.location.href,
